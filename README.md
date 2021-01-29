@@ -15,10 +15,6 @@ utterance.match(r'@NOUN')
 utterance.search(r'@ADP <@PROPN>')  	
 # returns <natex.Match object; span=(17, 28), match='in New York'>
 
-# find first occurence of character sequence "ea" in nouns only
-utterance.search(r'ea@NOUN')			
-# returns <natex.Match object; span=(11, 16), match='steak'>
-
 # find all occurences of nouns or proper nouns
 utterance.findall(r'@(NOUN|PROPN)') 	
 # returns ['Sloths', 'steak', 'New York']
@@ -85,6 +81,10 @@ from natex import natex
 
 utterance = natex('Sloths eat steak in New York')
 
+# find first occurence of character sequence "ea" in nouns only
+utterance.search(r'ea@NOUN')			
+# returns <natex.Match object; span=(11, 16), match='steak'>
+
 # find first occurence of character sequence "ea"
 utterance.search(r'ea')
 # returns <natex.Match object; span=(7, 9), match='ea'>
@@ -107,6 +107,7 @@ pip install natex
 
 ## Usage
 NatEx provides the same API as the [`re` package], but adds the following special characters:
+
 [`re` package]: https://docs.python.org/3/library/re.html
 
 | Symbol | Meaning                  |
