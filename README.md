@@ -15,10 +15,6 @@ utterance.match(r'@NOUN')
 utterance.search(r'@ADP <@PROPN>')  	
 # returns <natex.Match object; span=(17, 28), match='in New York'>
 
-# find first occurence of character sequence "ea"
-utterance.search(r'ea')
-# returns <natex.Match object; span=(7, 9), match='ea'>
-
 # find first occurence of character sequence "ea" in nouns only
 utterance.search(r'ea@NOUN')			
 # returns <natex.Match object; span=(11, 16), match='steak'>
@@ -26,10 +22,6 @@ utterance.search(r'ea@NOUN')
 # find all occurences of nouns or proper nouns
 utterance.findall(r'@(NOUN|PROPN)') 	
 # returns ['Sloths', 'steak', 'New York']
-
-# find all occurences of nouns or proper nouns starting with a lowercase s
-utterance.findall(r's[^@]+@(NOUN|PROPN)') 
-# returns ['steak']
 
 # find all occurences of nouns or proper nouns starting with an s (irregardless of casing)
 utterance.findall(r's[^@]+@(NOUN|PROPN)', natex.I)
@@ -46,13 +38,22 @@ Think of it as an extension of [regular expressions] for natural language proces
 
 NatEx was designed primarily with simplicity in mind. 
 
-## Examples
-You can use it for simple response template generation (NLG):
+## More Examples
+You can use it for simple tagging (**NLU**):
 
 ```python
 import natex
 
-utterance = natex('Eat my shorts', 'en')
+utterance = natex('Eat my shorts')
+
+```
+
+@ Or for simple response template generation (**NLG**):
+
+```python
+import natex
+
+utterance = natex('Eat my shorts')
 
 # look for token with imperative form
 is_command = utterance.match(r'<!>')
@@ -65,6 +66,24 @@ if is_command:
 	# will contain 'I will do my best to eat shorts!'
 
 ```
+
+Even more (random) examples:
+
+```python
+utterance = natex('Sloths eat steak in New York')
+
+# find first occurence of character sequence "ea"
+utterance.search(r'ea')
+# returns <natex.Match object; span=(7, 9), match='ea'>
+
+# find all occurences of nouns or proper nouns starting with a lowercase s
+utterance.findall(r's[^@]+@(NOUN|PROPN)') 
+# returns ['steak']
+
+natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').sub(r'#NSUBJ', 'Affe')
+# returns 'Ein Affe isst keinen Gurkensalat in New York.'
+```
+
 
 ## Installation
 Run:
@@ -90,7 +109,7 @@ Calling the `natex()` function returns a `NatEx` instance. See [Methods] for a m
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the utterance respectively.
 
 ### Configuration
-You can set the **processing language** of NatEx using the second parameter `language_code`. 
+You can set the **processing language** of NatEx using the second parameter `language_code` (defaults to 'en'). 
 It accepts a two-letter language-code, supporting [all languages officially supported by stanza].
 
 [all languages officially supported by stanza]: https://stanfordnlp.github.io/stanza/available_models.html
@@ -100,6 +119,8 @@ It accepts a two-letter language-code, supporting [all languages officially supp
 utterance = natex('Das Faultier isst keinen Gurkensalat', 'de')
 
 ```
+
+When you run NatEx for the first time, it will check for the existence of the corresponding language models and download them if necessary. All subsequent calls to `natex()` will exclude that step.
 
 ### Methods
 Methods are derived from Python's built-in `re` package:
