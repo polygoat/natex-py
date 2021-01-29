@@ -1,4 +1,4 @@
-# **Natural Language Expressions for Python
+# Natural Language Expressions for Python
 **NatEx**: Regular Expressions turbo-charged with notations for part-of-speech and dependency tree tags
 
 ## In a Nutshell
