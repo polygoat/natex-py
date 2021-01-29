@@ -11,8 +11,11 @@ utterance = natex('Eat my shorts')
 is_command = utterance.match(r'<!>')
 
 if is_command:
-	action_verb = utterance.search(r'<@VERB!>')
-	response = f'I will try to {action_verb}!'
+	action_verb = utterance.search(r'<@VERB!>').lower()
+	action_recipient = utterance.search(r'<#OBJ>')
+	response = f'I will do my best to {action_verb} {action_recipient}!'
+	
+	# will contain 'I will do my best to eat shorts!'
 
 ```
 
