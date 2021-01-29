@@ -1,21 +1,13 @@
-# **Nat**ural Language **Ex**pressions for Python
-Regular Expressions turbo-charged with notations for part-of-speech and dependency tree tags
+# **Natural Language Expressions for Python
+**NatEx**: Regular Expressions turbo-charged with notations for part-of-speech and dependency tree tags
 
 ## In a Nutshell
 ```python
 import natex
 
-utterance = natex('Eat my shorts')
+utterance = natex('Sloths eat steak in New York')
 
-# look for token with imperative form
-is_command = utterance.match(r'<!>')
 
-if is_command:
-	action_verb = utterance.search(r'<@VERB!>').lower()
-	action_recipient = utterance.search(r'<#OBJ>')
-	response = f'I will do my best to {action_verb} {action_recipient}!'
-	
-	# will contain 'I will do my best to eat shorts!'
 
 ```
 
@@ -28,6 +20,25 @@ Think of it as an extension of [regular expressions] for natural language proces
 
 NatEx was designed primarily with simplicity in mind. 
 
+## Examples
+You can use it for simple response template generation (NLG):
+
+```python
+import natex
+
+utterance = natex('Eat my shorts', 'en')
+
+# look for token with imperative form
+is_command = utterance.match(r'<!>')
+
+if is_command:
+	action_verb = utterance.search(r'<@VERB!>').lower()
+	action_recipient = utterance.search(r'<#OBJ>')
+	response = f'I will do my best to {action_verb} {action_recipient}!'
+	
+	# will contain 'I will do my best to eat shorts!'
+
+```
 
 ## Installation
 
