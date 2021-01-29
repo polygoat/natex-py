@@ -1,5 +1,5 @@
-# Natex for Python
-**Nat**ural Language **Ex**pressions for Python – RegEx turbo-charged with notations for part-of-speech and dependency tree tags
+# **Nat**ural Language **Ex**pressions for Python
+RegEx turbo-charged with notations for part-of-speech and dependency tree tags
 
 ## In a Nutshell
 
