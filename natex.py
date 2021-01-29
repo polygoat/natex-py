@@ -85,8 +85,6 @@ class NatExToken(Data):
 
 		return output
 
-class NatExSeparator(Data):	pass
-
 class NatExMatch(Data):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -97,6 +95,8 @@ class NatExMatch(Data):
 
 	def span(self):
 		return tuple(self._span)
+
+class NatExSeparator(Data):	pass
 
 class NatEx:
 	UNIVERSAL_POS_TAGS = ['SCONJ', 'PUNCT', 'PROPN', 'CCONJ', 'VERB', 'PRON', 'PART', 'NOUN', 'INTJ', 'SYM', 'NUM', 'DET', 'AUX', 'ADV', 'ADP', 'ADJ', 'X']
@@ -333,7 +333,7 @@ natex.I = re.I
 natex.M = re.M
 natex.S = re.S
 
-""" TEST
+""" TESTS:
 sentence = natex('Turn off the lights', 'en')
 
 selector = '<>'
@@ -372,5 +372,4 @@ print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 selector = r'<(Affe|@NOUN|#AMOD)>'
 print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
-#print(sentence.match(r'~IMP'))
 """
