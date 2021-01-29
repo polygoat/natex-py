@@ -25,6 +25,8 @@ Think of it as an extension of regular expressions for natural language processi
 
 NatEx was designed primarily with simplicity in mind. 
 
+[stanza]: https://stanfordnlp.github.io/stanza
+
 ## Installation
 
 ```bash
@@ -46,7 +48,9 @@ NatEx provides the same API as the `re` package, but adds the following special 
 
 ### Configuration
 You can set the **processing language** of NatEx using the second parameter `language_code`. 
-It accepts a two-letter language-code, supporting [all languages officially supported by stanza][https://stanfordnlp.github.io/stanza/available_models.html].
+It accepts a two-letter language-code, supporting [all languages officially supported by stanza].
+
+[all languages officially supported by stanza]: https://stanfordnlp.github.io/stanza/available_models.html
 
 ```python
 
