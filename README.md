@@ -118,6 +118,18 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 | !      | imperative (mood)        | 
 | >      | token boundary (closing) | 
 
+If you combine features (e.g. seeking by part of speech and dependency tree simultaneously) make sure you provide them in the order of the table above.
+
+This will work:
+```python
+natex('There goes a test sentence').findall(r'<@NOUN#OBJ>')
+```
+
+But this won't:
+```python
+natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
+```
+
 Calling the `natex()` function returns a `NatEx` instance. See [Methods] for a more detailed description.
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the utterance respectively.
 
