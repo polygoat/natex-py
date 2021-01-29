@@ -4,8 +4,20 @@ RegEx turbo-charged with notations for part-of-speech and dependency tree tags
 ## In a Nutshell
 
 ## Goals & Design
+The goal of Natex is quick and simple parsing of tokens using their literal representation, part-of-speech, and dependency tree tags. 
+It provides the same API as the `re` package, but adds the following special characters:
+
+| Symbol | Meaning                  |
+|:------:| ------------------------ |
+| <      | Token boundary (opening) | 
+| :      | Any feature 	 	        | 
+| @      | POS tag                  | 
+| #      | dependency tree tag      | 
+| !      | Imperative (mood)        | 
+| >      | Token boundary (closing) | 
 
 Natex was designed primarily with simplicity in mind. 
+
 
 ## Installation
 
@@ -17,13 +29,13 @@ pip install natex
 ```python
 import natex
 
-utterance = 'Eat my shorts'
+utterance = natex('Eat my shorts')
 
-parsed_natex = natex(utterance)
-is_command = parsed_natex.match(r'<@VERB!>')
+# look for token with imperative form
+is_command = utterance.match(r'<!>')
 
 if is_command:
-	action_verb = parsed_natex.search(r'<@VERB!>')
+	action_verb = utterance.search(r'<@VERB!>')
 	response = f'I will try to {action_verb}!'
 
 ```
