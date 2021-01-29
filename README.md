@@ -23,10 +23,11 @@ if is_command:
 The goal of NatEx is quick and simple parsing of tokens using their literal representation, part-of-speech, and dependency tree tags.
 Think of it as an extension of [regular expressions] for natural language processing. The generated part-of-speech and dependency tree tags are provided by [stanza] and merged into a string that can be searched through.
 
-NatEx was designed primarily with simplicity in mind. 
-
 [regular expressions]: https://docs.python.org/3/library/re.html
 [stanza]: https://stanfordnlp.github.io/stanza
+
+NatEx was designed primarily with simplicity in mind. 
+
 
 ## Installation
 
