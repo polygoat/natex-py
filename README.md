@@ -134,6 +134,8 @@ natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
 Calling the `natex()` function returns a `NatEx` instance. See [Methods] for a more detailed description.
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the sentence respectively.
 
+[Methods]: #methods
+
 ### Configuration
 You can set the **processing language** of NatEx using the second parameter `language_code` (defaults to 'en'). 
 It accepts a two-letter language-code, supporting [all languages officially supported by stanza].
