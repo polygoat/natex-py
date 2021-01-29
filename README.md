@@ -3,7 +3,7 @@
 
 ## In a Nutshell
 ```python
-import natex
+from natex import natex
 
 utterance = natex('Sloths eat steak in New York')
 
@@ -42,16 +42,27 @@ NatEx was designed primarily with simplicity in mind.
 You can use it for simple tagging (**NLU**):
 
 ```python
-import natex
+from natex import natex
 
-utterance = natex('Eat my shorts')
+utterance = natex('book flights from Munich to Chicago')
+start_location, destination_location = utterance.findall('@PROPN')
+# start_location ='Munich', destination_location = 'Chicago'
+
+utterance = natex('I am being called Dan Borufka')
+firstname, lastname = utterance.findall('@PROPN')
+# firstname = 'Dan', lastname = 'Borufka'
+
+utterance = natex('I need to go to Italy')
+clause = utterance.search('<@ADP> <@PROPN>').match
+# clause = 'to Italy'
+destination = clause.split(' ')[1]
 
 ```
 
-@ Or for simple response template generation (**NLG**):
+Or for simple response template generation (**NLG**):
 
 ```python
-import natex
+from natex import natex
 
 utterance = natex('Eat my shorts')
 
@@ -70,6 +81,8 @@ if is_command:
 Even more (random) examples:
 
 ```python
+from natex import natex
+
 utterance = natex('Sloths eat steak in New York')
 
 # find first occurence of character sequence "ea"
