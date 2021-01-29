@@ -8,25 +8,32 @@ import natex
 utterance = natex('Sloths eat steak in New York')
 
 # check if string begins with noun:
-utterance.match(r'@NOUN')  					# returns <natex.Match object; span=(0, 6), match='Sloths'>
+utterance.match(r'@NOUN')
+# returns <natex.Match object; span=(0, 6), match='Sloths'>
 
 # find first occurence of an adposition followed by a proper noun
-utterance.search(r'@ADP <@PROPN>')  		# returns <natex.Match object; span=(17, 28), match='in New York'>
+utterance.search(r'@ADP <@PROPN>')  	
+# returns <natex.Match object; span=(17, 28), match='in New York'>
 
 # find first occurence of character sequence "ea"
-utterance.search(r'ea')						# returns <natex.Match object; span=(7, 9), match='ea'>
+utterance.search(r'ea')
+# returns <natex.Match object; span=(7, 9), match='ea'>
 
 # find first occurence of character sequence "ea" in nouns only
-utterance.search(r'ea@NOUN')				# returns <natex.Match object; span=(11, 16), match='steak'>
+utterance.search(r'ea@NOUN')			
+# returns <natex.Match object; span=(11, 16), match='steak'>
 
 # find all occurences of nouns or proper nouns
-utterance.findall(r'@(NOUN|PROPN)') 		# returns ['Sloths', 'steak', 'New York']
+utterance.findall(r'@(NOUN|PROPN)') 	
+# returns ['Sloths', 'steak', 'New York']
 
 # find all occurences of nouns or proper nouns starting with a lowercase s
-utterance.findall(r's[^@]+@(NOUN|PROPN)') 	# returns ['steak']
+utterance.findall(r's[^@]+@(NOUN|PROPN)') 
+# returns ['steak']
 
 # find all occurences of nouns or proper nouns starting with an s (irregardless of casing)
-utterance.findall(r's[^@]+@(NOUN|PROPN)', natex.I) # returns ['Sloths', 'steak']
+utterance.findall(r's[^@]+@(NOUN|PROPN)', natex.I)
+# returns ['Sloths', 'steak']
 
 ```
 
