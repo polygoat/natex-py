@@ -77,12 +77,12 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 
 | Symbol | Meaning                  |
 |:------:| ------------------------ |
-| <      | Token boundary (opening) | 
-| :      | Any feature 	 	        | 
-| @      | POS tag                  | 
+| <      | token boundary (opening) | 
+| :      | either @ or #  			| 
+| @      | part of speech tag       | 
 | #      | dependency tree tag      | 
-| !      | Imperative (mood)        | 
-| >      | Token boundary (closing) | 
+| !      | imperative (mood)        | 
+| >      | token boundary (closing) | 
 
 [`re` package]: https://docs.python.org/3/library/re.html
 
