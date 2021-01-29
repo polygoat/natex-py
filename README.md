@@ -19,6 +19,9 @@ utterance.search(r'ea')
 utterance.search(r'ea@NOUN')
 # will yield <natex.Match object; span=(11, 16), match='steak'>
 
+utterance.findall(r'@(NOUN|PROPN)')
+# will yield ['Sloths', 'steak', 'New York']
+
 ```
 
 ## Goals & Design
