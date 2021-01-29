@@ -4,6 +4,7 @@ import re
 import os
 import sys
 import stanza
+import argparse
 import pydash as _
 import contextlib
 from dataclasses import dataclass
@@ -116,7 +117,15 @@ class NatEx:
 			sentence_pos += token_length
 
 			self.tokens.append(parsed_token)
-			natex_token = f'<{parsed_token.literal}@{parsed_token.upos}#{parsed_token.udep}>'
+
+			optionals = ''
+
+			if parsed_token.features:
+				if 'mood' in parsed_token.features:
+					optionals = '~' + parsed_token.features['mood'].upper()
+
+			deps = parsed_token.udep.replace(':', ' ')
+			natex_token = f'<{parsed_token.literal}@{parsed_token.upos}#{deps}{optionals}>'
 
 			representation += natex_token
 
@@ -131,8 +140,8 @@ class NatEx:
 		self.representation = representation
 
 	def __repr__(self):
-		return str(self.representation)
 		return repr(self.__dict__)
+		return str(self.representation)
 
 	def __split_span(self, feature_string):
 		data = self.__split_features(feature_string)
@@ -172,6 +181,8 @@ class NatEx:
 
 	def match(self, pattern, flags=0):
 		pattern = self.__natex_to_regex(pattern)
+		print('PATTERN', pattern)
+		print('REPRESENTATION', self.representation)
 		re_match = re.match(pattern, self.representation, flags)
 		return self.__match_to_natex(re_match)
 			
@@ -188,8 +199,6 @@ class NatEx:
 
 	def sub(self, pattern, by, flags=0):
 		pattern = self.__natex_to_regex(pattern)
-		print('PATTERN', pattern)
-		print('REPRESENTATION', self.representation)
 		result = re.sub(pattern, by, self.representation, flags)
 		result = self.__natex_to_str(result)
 		return result
@@ -222,3 +231,98 @@ natex.Match = NatExMatch
 natex.I = re.I
 natex.M = re.M
 natex.S = re.S
+
+natex.SYMBOL_ORDER = ['@','#','!']
+
+
+# use splitting to convert from natex to regex:
+
+def natex_to_regex(natex_string):
+	BY_TOKENS = r'(?<=>)|(?=<)'
+	#BY_ANY_SPACE = r'((?<=>)[^<]+(?=<)|[\s\n]|\\[stn ](?:[*+?]|\{[\d,\s]+\})?)+'
+
+	natex_string = natex_string.replace(r'\<', '${ESCAPED_TOKEN_OPEN}')
+	natex_string = natex_string.replace(r'\>', '${ESCAPED_TOKEN_CLOSE}')
+	found_tokens = _.filter_(re.split(BY_TOKENS, natex_string))
+
+	regex_tokens = []
+
+	print(natex_string)
+
+	for index, token in enumerate(found_tokens):
+		used_symbols = set([])
+		spacing = False
+		found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
+
+		tags = {
+			'#': None,
+			'@': None,
+			':': None,
+			'!': False
+		}
+
+		for tag in found_tags:
+			symbol = tag[0]
+			if symbol in '@#:!':
+				used_symbols.add(symbol)
+				tags[symbol] = tag[1:]
+		
+		print('USED_SYMBOLS', used_symbols)
+		print('USED_TAGS', tags)
+
+		if re.match(r'.*\s+$', token):
+			token, spacing = re.split(r'(?=\s+$)', token)
+
+		if not token.endswith('>'):
+			token += '(?:[^>]|\\>)*>'
+
+		if not token.startswith('<'):
+			token = '<(?:[^<]|\\<)*' + token
+
+		regex_tokens.append(token)
+
+		if spacing:
+			regex_tokens.append(spacing)
+
+	print(regex_tokens)
+
+	print('')
+
+
+sentence = natex('Turn off the lights', 'en')
+
+selector = '<>'
+print(natex_to_regex(selector))
+
+selector = r'<@NOUN>'
+print(natex_to_regex(selector))
+
+selector = r'<#SUBJ@NOUN>'
+print(natex_to_regex(selector))
+
+selector = r'<:amod>'
+print(natex_to_regex(selector))
+
+selector = r'<:amod'
+print(natex_to_regex(selector))
+
+selector = r'lights@NOUN <>'
+print(natex_to_regex(selector))
+
+selector = r'@ADV#SUBJ'
+print(natex_to_regex(selector))
+
+selector = r'\<test\>'
+print(natex_to_regex(selector))
+
+selector = r'New York'
+print(natex_to_regex(selector))
+
+selector = r'<dan\@gmail\.com>'
+print(natex_to_regex(selector))
+
+selector = r'<(@NOUN|#AMOD)>'
+print(natex_to_regex(selector))
+
+
+#print(sentence.match(r'~IMP'))
