@@ -20,8 +20,71 @@ class Data:
 	def __repr__(self):
 		return repr(self.__dict__)
 
-class NatExToken(Data):	pass
-class NatEx(Data):	pass
+class NatExToken(Data):	
+	SYMBOL_ORDER = ['', '@','#', '!']
+
+	def __repr__(self):
+		return repr(self.__dict__)
+
+	def is_empty(self, check_text=True):
+		symbols = NatExToken.SYMBOL_ORDER
+
+		if not check_text:
+			symbols = symbols[1:]
+
+		for symbol in symbols:
+			value = getattr(self, symbol)
+			if value:
+				if value.strip() and value.strip() != '<>':
+					return False
+
+		if check_text:
+			if ':' in self.literal:
+				return False
+
+		return True
+
+	def render(self):
+		output = ''
+
+		if self.literal == '<>' or self.is_empty():
+			output = '<[^>]+>'
+		else:
+			for i, symbol in enumerate(NatExToken.SYMBOL_ORDER):
+				value = getattr(self, symbol)
+				if value:
+					if value.startswith('<'):
+						value = value[1:]
+					output += symbol + value
+				else:
+					next_symbol = _.get(NatExToken.SYMBOL_ORDER, i + 1)
+					
+					if symbol != '!':
+						if next_symbol != '!':
+							output += symbol + '[^' + next_symbol + ']*'
+
+			output += '[^>]+'
+
+			any_selector = getattr(self, ':')
+
+			if any_selector:
+				if self.is_empty(check_text=False):
+					output = f'([@#]?{any_selector})'
+				else:
+					output = f'([@#]?{any_selector}|{output})'
+
+			if not self.literal.endswith('>'):
+				output += '(?:[^>]|\\>)*>'
+			else:
+				output += '>'
+
+			if not self.literal.startswith('<'):
+				output = '<(?:[^<]|\\<)*' + output
+			else:
+				output = '<' + output
+
+		return output
+
 class NatExSeparator(Data):	pass
 
 class NatExMatch(Data):
@@ -38,9 +101,6 @@ class NatExMatch(Data):
 class NatEx:
 	UNIVERSAL_POS_TAGS = ['SCONJ', 'PUNCT', 'PROPN', 'CCONJ', 'VERB', 'PRON', 'PART', 'NOUN', 'INTJ', 'SYM', 'NUM', 'DET', 'AUX', 'ADV', 'ADP', 'ADJ', 'X']
 	UNIVERSAL_DEP_TAGS = ['REPARANDUM', 'DISLOCATED', 'PARATAXIS', 'DISCOURSE', 'VOCATIVE', 'GOESWITH', 'COMPOUND', 'ORPHAN', 'NUMMOD', 'ADVMOD', 'XCOMP', 'PUNCT', 'NSUBJ', 'FIXED', 'CSUBJ', 'CCOMP', 'APPOS', 'ADVCL', 'ROOT', 'NMOD', 'MARK', 'LIST', 'IOBJ', 'FLAT', 'EXPL', 'CONJ', 'CASE', 'AMOD', 'OBL', 'OBJ', 'DET', 'DEP', 'COP', 'CLF', 'AUX', 'ACL', 'CC']
-
-	UNIVERSAL_POS_TAGS_RE = '|'.join(UNIVERSAL_POS_TAGS)
-	UNIVERSAL_DEP_TAGS_RE = '|'.join(UNIVERSAL_DEP_TAGS)
 
 	def __init__(self, parsed_sentence):
 		self.parsed_sentence = parsed_sentence
@@ -121,8 +181,8 @@ class NatEx:
 			optionals = ''
 
 			if parsed_token.features:
-				if 'mood' in parsed_token.features:
-					optionals = '~' + parsed_token.features['mood'].upper()
+				if _.get(parsed_token.features, 'MOOD') == 'IMP':
+					optionals = '!'
 
 			deps = parsed_token.udep.replace(':', ' ')
 			natex_token = f'<{parsed_token.literal}@{parsed_token.upos}#{deps}{optionals}>'
@@ -140,7 +200,6 @@ class NatEx:
 		self.representation = representation
 
 	def __repr__(self):
-		return repr(self.__dict__)
 		return str(self.representation)
 
 	def __split_span(self, feature_string):
@@ -154,21 +213,63 @@ class NatEx:
 			obj = dict()
 			for features in feature_string.split('|'):
 				key, value = features.split('=')
-				obj[key.lower()] = value
+				obj[key.upper()] = value.upper()
 			return obj
 
-	def __natex_to_regex(self, pattern):
-		pattern = re.sub(r'<@', r'<[^@]+@', pattern)
-		pattern = re.sub(r'(^|\s)@', r'\1<[^@]+@', pattern)
-		pattern = re.sub(r'@([^#\s]+)([^#A-Z]|$)', r'@\1#[^>]*>\2', pattern)
-		pattern = re.sub(r'^([^<\s])', r'<\1', pattern)
-		pattern = pattern.replace('>#', '#').replace('<#', '<[^#]+#')
-		return pattern
+	def __to_regex(self, natex_string):
+		parsed_natex = natex_string.replace(r'\<', '${ESCAPED_TOKEN_OPEN}')
+		parsed_natex = parsed_natex.replace(r'\>', '${ESCAPED_TOKEN_CLOSE}')
 
-	def __natex_to_str(self, natex_string):
+		found_tokens = _.filter_(re.split(r'(?<=>)|(?=<)', parsed_natex))
+		regex_tokens = []
+
+		for index, token in enumerate(found_tokens):
+			used_symbols = set([])
+			spacing = False
+			found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
+
+			cleaned_parts = re.split(r'(?<!\\)[#@:!][^#@:!>]*', token)
+			cleaned_parts = [part for part in cleaned_parts if part not in ['', '<', '>']]
+
+			tags = {
+				'#': None,
+				'@': None,
+				':': None,
+				'!': False
+			}
+
+			for tag in found_tags:
+				symbol = tag[0]
+				if symbol in '@#:!':
+					used_symbols.add(symbol)
+					tags[symbol] = tag[1:].strip()
+			
+			tags[''] = ''.join(cleaned_parts)
+			tags['literal'] = natex_string
+			search_token = NatExToken(**tags)
+			token = search_token.render()
+
+			if re.match(r'.*\s+$', token):
+				token, spacing = re.split(r'(?=\s+$)', token)
+
+			token = token.replace('<(', '<[^<]*(')
+
+			regex_tokens.append(token)
+
+			if spacing:
+				regex_tokens.append(spacing)
+
+		output = ''.join(regex_tokens)
+		output = output.replace('${ESCAPED_TOKEN_OPEN}', '<')
+		output = output.replace('${ESCAPED_TOKEN_CLOSE}', '>')
+		output = re.sub(r'\((?!\?:)', '(?:', output)
+
+		return f'({output})'
+
+	def __to_str(self, natex_string):
 		return re.sub(r'<|@[^#]+|#[^>]+>', '', natex_string).replace('<', '').replace('>', '')
 
-	def __match_to_natex(self, match):
+	def __from_match(self, match):
 		if match:
 			span = match.span()
 			span = [self.mapping[span[0]][0], self.mapping[span[1]][0]]
@@ -180,27 +281,25 @@ class NatEx:
 		stanza.download(language_code, processors=STANZA_PROCESSORS, verbose=verbose)
 
 	def match(self, pattern, flags=0):
-		pattern = self.__natex_to_regex(pattern)
-		print('PATTERN', pattern)
-		print('REPRESENTATION', self.representation)
+		pattern = self.__to_regex(pattern)
 		re_match = re.match(pattern, self.representation, flags)
-		return self.__match_to_natex(re_match)
+		return self.__from_match(re_match)
 			
 	def search(self, pattern, flags=0):
-		pattern = self.__natex_to_regex(pattern)
+		pattern = self.__to_regex(pattern)
 		re_match = re.search(pattern, self.representation, flags)
-		return self.__match_to_natex(re_match)
+		return self.__from_match(re_match)
 
 	def findall(self, pattern, flags=0):
-		pattern = self.__natex_to_regex(pattern)
+		pattern = self.__to_regex(pattern)
 		re_results = re.findall(pattern, self.representation, flags)
-		results = list(map(self.__natex_to_str, re_results))
+		results = list(map(self.__to_str, re_results))
 		return results
 
 	def sub(self, pattern, by, flags=0):
-		pattern = self.__natex_to_regex(pattern)
+		pattern = self.__to_regex(pattern)
 		result = re.sub(pattern, by, self.representation, flags)
-		result = self.__natex_to_str(result)
+		result = self.__to_str(result)
 		return result
 
 
@@ -227,102 +326,51 @@ def natex(sentence, language_code='en'):
 	result = NatEx(parsed_sentence)
 	return result
 
+natex.Class = NatEx
 natex.Match = NatExMatch
+natex.Token = NatExToken
 natex.I = re.I
 natex.M = re.M
 natex.S = re.S
 
-natex.SYMBOL_ORDER = ['@','#','!']
-
-
-# use splitting to convert from natex to regex:
-
-def natex_to_regex(natex_string):
-	BY_TOKENS = r'(?<=>)|(?=<)'
-	#BY_ANY_SPACE = r'((?<=>)[^<]+(?=<)|[\s\n]|\\[stn ](?:[*+?]|\{[\d,\s]+\})?)+'
-
-	natex_string = natex_string.replace(r'\<', '${ESCAPED_TOKEN_OPEN}')
-	natex_string = natex_string.replace(r'\>', '${ESCAPED_TOKEN_CLOSE}')
-	found_tokens = _.filter_(re.split(BY_TOKENS, natex_string))
-
-	regex_tokens = []
-
-	print(natex_string)
-
-	for index, token in enumerate(found_tokens):
-		used_symbols = set([])
-		spacing = False
-		found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
-
-		tags = {
-			'#': None,
-			'@': None,
-			':': None,
-			'!': False
-		}
-
-		for tag in found_tags:
-			symbol = tag[0]
-			if symbol in '@#:!':
-				used_symbols.add(symbol)
-				tags[symbol] = tag[1:]
-		
-		print('USED_SYMBOLS', used_symbols)
-		print('USED_TAGS', tags)
-
-		if re.match(r'.*\s+$', token):
-			token, spacing = re.split(r'(?=\s+$)', token)
-
-		if not token.endswith('>'):
-			token += '(?:[^>]|\\>)*>'
-
-		if not token.startswith('<'):
-			token = '<(?:[^<]|\\<)*' + token
-
-		regex_tokens.append(token)
-
-		if spacing:
-			regex_tokens.append(spacing)
-
-	print(regex_tokens)
-
-	print('')
-
-
+""" TEST
 sentence = natex('Turn off the lights', 'en')
 
 selector = '<>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'<@NOUN>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+selector = r'<lights@NOUN>'
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'<#SUBJ@NOUN>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
-selector = r'<:amod>'
-print(natex_to_regex(selector))
-
-selector = r'<:amod'
-print(natex_to_regex(selector))
+selector = r'<:OBJ>'
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'lights@NOUN <>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'@ADV#SUBJ'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'\<test\>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'New York'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'<dan\@gmail\.com>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 selector = r'<(@NOUN|#AMOD)>'
-print(natex_to_regex(selector))
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
+selector = r'<(Affe|@NOUN|#AMOD)>'
+print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
 
 #print(sentence.match(r'~IMP'))
+"""
