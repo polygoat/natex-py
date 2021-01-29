@@ -120,12 +120,12 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 
 If you combine features (e.g. seeking by part of speech and dependency tree simultaneously) make sure you provide them in the order of the table above.
 
-This will work:
+✔ This will work:
 ```python
 natex('There goes a test sentence').findall(r'<@NOUN#OBJ>')
 ```
 
-But this won't:
+✘ But this won't:
 ```python
 natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
 ```
