@@ -45,7 +45,14 @@ NatEx provides the same API as the `re` package, but adds the following special 
 
 
 ### Configuration
-You can set the **processing language** of NatEx using the second parameter `language_code`. It accepts a two-letter language-code, supporting [all languages officially supported by stanza][https://stanfordnlp.github.io/stanza/available_models.html].
+You can set the **processing language** of NatEx using the second parameter `language_code`. 
+It accepts a two-letter language-code, supporting [all languages officially supported by stanza][https://stanfordnlp.github.io/stanza/available_models.html].
+
+```python
+
+utterance = natex('Das Faultier isst keinen Gurkensalat', 'de')
+
+```
 
 ### Methods
 
