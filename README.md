@@ -17,8 +17,15 @@ pip install natex
 ```python
 import natex
 
-#if natex('').match(r''):
-	...
+utterance = 'Eat my shorts'
+
+parsed_natex = natex(utterance)
+is_command = parsed_natex.match(r'<@VERB!>')
+
+if is_command:
+	action_verb = parsed_natex.search(r'<@VERB!>')
+	response = f'I will try to {action_verb}!'
+
 ```
 
 
