@@ -7,7 +7,17 @@ import natex
 
 utterance = natex('Sloths eat steak in New York')
 
+utterance.match(r'@PROPN')
+# will yield <natex.Match object; span=(0, 6), match='Sloths'>
 
+utterance.search(r'@ADP <@PROPN>')
+# will yield <natex.Match object; span=(17, 28), match='in New York'>
+
+utterance.search(r'ea')
+# will yield <natex.Match object; span=(7, 9), match='ea'>
+
+utterance.search(r'ea@NOUN')
+# will yield <natex.Match object; span=(11, 16), match='steak'>
 
 ```
 
