@@ -21,3 +21,45 @@ def test_nlpex():
 
 	result = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').sub(r'#NSUBJ', 'Affe')
 	assert result == 'Ein Affe isst keinen Gurkensalat in New York.'
+
+
+def __test_nlpex_en():
+	sentence = natex('Turn off the lights', 'en')
+	selector = '<>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<!>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<@NOUN>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<lights@NOUN>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<#SUBJ@NOUN>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<:OBJ>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'lights@NOUN <>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'@ADV#SUBJ'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'\<test\>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'New York'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<dan\@gmail\.com>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<(@NOUN|#AMOD)>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
+
+	selector = r'<(Affe|@NOUN|#AMOD)>'
+	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
