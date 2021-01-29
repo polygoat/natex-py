@@ -166,8 +166,8 @@ class NatEx:
 			parsed_token = NatExToken(index=index,
 				literal=token['text'],
 				lemma=_.get(token, 'lemma', ''),
-				upos=_.get(token, 'upos', ''), 
-				xpos=_.get(token, 'xpos'), 
+				upos=_.get(token, 'upos', '').upper(), 
+				xpos=_.get(token, 'xpos').upper(), 
 				udep=_.get(token, 'deprel', '').upper(),
 				span=span,
 				features=self.__split_features(_.get(token, 'feats', '')),
@@ -242,7 +242,7 @@ class NatEx:
 				symbol = tag[0]
 				if symbol in '@#:!':
 					used_symbols.add(symbol)
-					tags[symbol] = tag[1:].strip()
+					tags[symbol] = tag[1:].strip().upper()
 			
 			tags[''] = ''.join(cleaned_parts)
 			tags['literal'] = natex_string
