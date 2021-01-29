@@ -38,7 +38,7 @@ Think of it as an extension of [regular expressions] for natural language proces
 
 NatEx was designed primarily with simplicity in mind. 
 
-## More Examples
+## Examples
 You can use it for simple tagging (**NLU**):
 
 ```python
