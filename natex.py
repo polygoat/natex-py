@@ -290,6 +290,12 @@ class NatEx:
 		re_match = re.search(pattern, self.representation, flags)
 		return self.__from_match(re_match)
 
+	def split(self, pattern, flags=0):
+		pattern = self.__to_regex(pattern)
+		results = re.split(pattern, self.representation, flags)
+		results = list(map(results, self.__to_str))
+		return results
+
 	def findall(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
 		re_results = re.findall(pattern, self.representation, flags)
