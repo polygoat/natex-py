@@ -22,6 +22,12 @@ utterance.search(r'ea@NOUN')
 utterance.findall(r'@(NOUN|PROPN)')
 # will yield ['Sloths', 'steak', 'New York']
 
+utterance.findall(r's[^@]+@(NOUN|PROPN)')
+# will yield ['steak']
+
+utterance.findall(r's[^@]+@(NOUN|PROPN)', natex.I)
+# will yield ['Sloths', 'steak']
+
 ```
 
 ## Goals & Design
