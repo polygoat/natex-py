@@ -67,6 +67,7 @@ if is_command:
 ```
 
 ## Installation
+Run:
 
 ```bash
 pip install natex
@@ -74,6 +75,7 @@ pip install natex
 
 ## Usage
 NatEx provides the same API as the [`re` package], but adds the following special characters:
+[`re` package]: https://docs.python.org/3/library/re.html
 
 | Symbol | Meaning                  |
 |:------:| ------------------------ |
@@ -84,7 +86,8 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 | !      | imperative (mood)        | 
 | >      | token boundary (closing) | 
 
-[`re` package]: https://docs.python.org/3/library/re.html
+Calling the `natex()` function returns a `NatEx` instance. See [Methods] for a more detailed description.
+Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the utterance respectively.
 
 ### Configuration
 You can set the **processing language** of NatEx using the second parameter `language_code`. 
@@ -99,6 +102,22 @@ utterance = natex('Das Faultier isst keinen Gurkensalat', 'de')
 ```
 
 ### Methods
+Methods are derived from Python's built-in `re` package:
+
+**.match(pattern, flags)**
+Checks (from the beginning of the string) whether the utterance matches a _pattern_ and returns a `natex.Match` object or `None` otherwise.
+
+**.search(pattern, flags)**
+Returns a `natex.Match` object describing the first substring matching _pattern_.
+
+**.findall(pattern, flags)**
+Returns all found strings matching _pattern_ as a list.
+
+**.split(pattern, flags)**
+Splits the utterance by all occurences of the found _pattern_ and returns a list of strings.
+
+**.sub(pattern, replacement, flags)**
+Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
 
 ## Testing
 You can use pytest in your terminal (simply type in `pytest`) to run the unit tests shipped with this package.
