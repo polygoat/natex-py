@@ -131,10 +131,10 @@ natex('There goes a test sentence').findall(r'<@NOUN#OBJ>')
 natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
 ```
 
-Calling the `natex()` function returns a `NatEx` instance. See [Methods] for a more detailed description.
+Calling the `natex()` function returns a `NatEx` instance. See [API] for a more detailed description.
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the sentence respectively.
 
-[Methods]: #methods
+[API]: #api
 
 ### Configuration
 You can set the **processing language** of NatEx using the second parameter `language_code` (defaults to 'en'). 
@@ -150,23 +150,26 @@ sentence = natex('Das Faultier isst keinen Gurkensalat', 'de')
 
 When you run NatEx for the first time, it will check for the existence of the corresponding language models and download them if necessary. All subsequent calls to `natex()` will exclude that step.
 
-### Methods
-Methods are derived from Python's built-in `re` package:
+### API
+The API is derived from Python's built-in `re` package:
 
-**.match(pattern, flags)**
-Checks (from the beginning of the string) whether the sentence matches a _pattern_ and returns a `natex.Match` object or `None` otherwise.
+**NatEx**
 
-**.search(pattern, flags)**
-Returns a `natex.Match` object describing the first substring matching _pattern_.
+	**.match(pattern, flags)**
+	
+	Checks (from the beginning of the string) whether the sentence matches a _pattern_ and returns a `natex.Match` object or `None` otherwise.
 
-**.findall(pattern, flags)**
-Returns all found strings matching _pattern_ as a list.
+	**.search(pattern, flags)**
+	Returns a `natex.Match` object describing the first substring matching _pattern_.
 
-**.split(pattern, flags)**
-Splits the sentence by all occurences of the found _pattern_ and returns a list of strings.
+	**.findall(pattern, flags)**
+	Returns all found strings matching _pattern_ as a list.
 
-**.sub(pattern, replacement, flags)**
-Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
+	**.split(pattern, flags)**
+	Splits the sentence by all occurences of the found _pattern_ and returns a list of strings.
+
+	**.sub(pattern, replacement, flags)**
+	Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
 
 ## Testing
 You can use pytest in your terminal (simply type in `pytest`) to run the unit tests shipped with this package.
