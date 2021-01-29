@@ -21,10 +21,11 @@ if is_command:
 
 ## Goals & Design
 The goal of NatEx is quick and simple parsing of tokens using their literal representation, part-of-speech, and dependency tree tags.
-Think of it as an extension of regular expressions for natural language processing. The generated part-of-speech and dependency tree tags are provided by [stanza] and merged into a string that can be searched through.
+Think of it as an extension of [regular expressions] for natural language processing. The generated part-of-speech and dependency tree tags are provided by [stanza] and merged into a string that can be searched through.
 
 NatEx was designed primarily with simplicity in mind. 
 
+[regular expressions]: https://docs.python.org/3/library/re.html
 [stanza]: https://stanfordnlp.github.io/stanza
 
 ## Installation
@@ -34,7 +35,7 @@ pip install natex
 ```
 
 ## Usage
-NatEx provides the same API as the `re` package, but adds the following special characters:
+NatEx provides the same API as the [`re` package], but adds the following special characters:
 
 | Symbol | Meaning                  |
 |:------:| ------------------------ |
@@ -45,6 +46,7 @@ NatEx provides the same API as the `re` package, but adds the following special 
 | !      | Imperative (mood)        | 
 | >      | Token boundary (closing) | 
 
+[`re` package]: https://docs.python.org/3/library/re.html
 
 ### Configuration
 You can set the **processing language** of NatEx using the second parameter `language_code`. 
