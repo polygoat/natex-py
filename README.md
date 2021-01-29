@@ -45,8 +45,8 @@ You can use it for simple tagging (**NLU**):
 from natex import natex
 
 utterance = natex('book flights from Munich to Chicago')
-start_location, destination_location = utterance.findall('@PROPN')
-# start_location ='Munich', destination_location = 'Chicago'
+origin_location, destination_location = utterance.findall('@PROPN')
+# origin_location ='Munich', destination_location = 'Chicago'
 
 utterance = natex('I am being called Dan Borufka')
 firstname, lastname = utterance.findall('@PROPN')
