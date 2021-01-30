@@ -161,21 +161,21 @@ The API is derived from Python's built-in `re` package:
 
 **NatEx**
 
-	**.match(pattern, flags)**
-	
-	Checks (from the beginning of the string) whether the sentence matches a _pattern_ and returns a `natex.Match` object or `None` otherwise.
+**.match(pattern, flags)**
 
-	**.search(pattern, flags)**
-	Returns a `natex.Match` object describing the first substring matching _pattern_.
+Checks (from the beginning of the string) whether the sentence matches a _pattern_ and returns a `natex.Match` object or `None` otherwise.
 
-	**.findall(pattern, flags)**
-	Returns all found strings matching _pattern_ as a list.
+**.search(pattern, flags)**
+Returns a `natex.Match` object describing the first substring matching _pattern_.
 
-	**.split(pattern, flags)**
-	Splits the sentence by all occurences of the found _pattern_ and returns a list of strings.
+**.findall(pattern, flags)**
+Returns all found strings matching _pattern_ as a list.
 
-	**.sub(pattern, replacement, flags)**
-	Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
+**.split(pattern, flags)**
+Splits the sentence by all occurences of the found _pattern_ and returns a list of strings.
+
+**.sub(pattern, replacement, flags)**
+Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
 
 ## Testing
 You can use pytest in your terminal (simply type in `pytest`) to run the unit tests shipped with this package.
