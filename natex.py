@@ -50,6 +50,8 @@ class NatExToken(Data):
 		if self.literal == '<>' or self.is_empty():
 			output = '<[^>]+>'
 		else:
+			previous_symbols = ''
+
 			for i, symbol in enumerate(NatExToken.SYMBOL_ORDER):
 				value = getattr(self, symbol)
 				if value:
@@ -61,9 +63,11 @@ class NatExToken(Data):
 					
 					if symbol != '!':
 						if next_symbol != '!':
-							output += symbol + '[^' + next_symbol + ']*'
+							output += symbol + '[^<' + previous_symbols + next_symbol + ']*'
 
-			output += '[^>]+'
+				previous_symbols += symbol
+
+			output += '[^>]*'
 
 			any_selector = getattr(self, ':')
 
@@ -74,12 +78,12 @@ class NatExToken(Data):
 					output = f'([@#]?{any_selector}|{output})'
 
 			if not self.literal.endswith('>'):
-				output += '(?:[^>]|\\>)*>'
+				output += r'(?:[^>]|\\>)*>'
 			else:
 				output += '>'
 
 			if not self.literal.startswith('<'):
-				output = '<(?:[^<]|\\<)*' + output
+				output = r'<(?:[^<]|\\<)*' + output
 			else:
 				output = '<' + output
 
@@ -139,7 +143,7 @@ class NatEx:
 				representation += parsed_separator.literal
 				index += 1
 
-				for i in range(mapping_index, len(representation)):
+				for i in range(mapping_index, len(representation) + 1):
 					self.mapping[i] = span
 
 				mapping_index = len(representation)
@@ -189,7 +193,7 @@ class NatEx:
 
 			representation += natex_token
 
-			for i in range(mapping_index, len(representation)):
+			for i in range(mapping_index, len(representation) + 1):
 				self.mapping[i] = span
 
 			mapping_index = len(representation)
@@ -217,42 +221,45 @@ class NatEx:
 			return obj
 
 	def __to_regex(self, natex_string):
-		parsed_natex = natex_string.replace(r'\<', '${ESCAPED_TOKEN_OPEN}')
-		parsed_natex = parsed_natex.replace(r'\>', '${ESCAPED_TOKEN_CLOSE}')
+		parsed_natex = natex_string.replace(r'\\<', '${ESCAPED_TOKEN_OPEN}')
+		parsed_natex = parsed_natex.replace(r'\\>', '${ESCAPED_TOKEN_CLOSE}')
 
 		found_tokens = _.filter_(re.split(r'(?<=>)|(?=<)', parsed_natex))
 		regex_tokens = []
 
 		for index, token in enumerate(found_tokens):
-			used_symbols = set([])
 			spacing = False
-			found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
 
-			cleaned_parts = re.split(r'(?<!\\)[#@:!][^#@:!>]*', token)
-			cleaned_parts = [part for part in cleaned_parts if part not in ['', '<', '>']]
+			if not re.match(r'\s+$', token):
+				used_symbols = set([])
+				found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
 
-			tags = {
-				'#': None,
-				'@': None,
-				':': None,
-				'!': False
-			}
+				cleaned_parts = re.split(r'(?<!\\)[#@:!][^#@:!>]*', token)
+				cleaned_parts = [part for part in cleaned_parts if part not in ['', '<', '>']]
 
-			for tag in found_tags:
-				symbol = tag[0]
-				if symbol in '@#:!':
-					used_symbols.add(symbol)
-					tags[symbol] = tag[1:].strip().upper()
-			
-			tags[''] = ''.join(cleaned_parts)
-			tags['literal'] = natex_string
-			search_token = NatExToken(**tags)
-			token = search_token.render()
+				tags = {
+					'#': None,
+					'@': None,
+					':': None,
+					'!': False
+				}
 
-			if re.match(r'.*\s+$', token):
-				token, spacing = re.split(r'(?=\s+$)', token)
+				for tag in found_tags:
+					symbol = tag[0]
+					if symbol in '@#:!':
+						used_symbols.add(symbol)
+						tags[symbol] = tag[1:].strip().upper()
+				
+				tags[''] = ''.join(cleaned_parts)
+				tags['literal'] = natex_string
+				search_token = NatExToken(**tags)
+				token = search_token.render()
 
-			token = token.replace('<(', '<[^<]*(')
+				if re.match(r'.*\s+$', token):
+					token, spacing = re.split(r'(?=\s+$)', token)
+
+				if '[^<]*' not in token:
+					token = token.replace('<(', '<[^<]*(')
 
 			regex_tokens.append(token)
 
@@ -263,17 +270,21 @@ class NatEx:
 		output = output.replace('${ESCAPED_TOKEN_OPEN}', '<')
 		output = output.replace('${ESCAPED_TOKEN_CLOSE}', '>')
 		output = re.sub(r'\((?!\?:)', '(?:', output)
+		output = output.replace('><', '> <')
+		output = output.replace('<[^<]*(?:[^<]|\\<)*', '<(?:[^<]|\\<)*')
 
-		return f'({output})'
+		self.last_regex = f'({output})'
+
+		return self.last_regex
 
 	def __to_str(self, natex_string):
 		return re.sub(r'<|@[^#]+|#[^>]+>', '', natex_string).replace('<', '').replace('>', '')
 
-	def __from_match(self, match):
+	def __from_match(self, match, regex):
 		if match:
 			span = match.span()
 			span = [self.mapping[span[0]][0], self.mapping[span[1]][0]]
-			result = NatExMatch(_span=span, original=self.original)
+			result = NatExMatch(_span=span, original=self.original, regex=regex)
 			return result
 
 	@staticmethod
@@ -283,12 +294,12 @@ class NatEx:
 	def match(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
 		re_match = re.match(pattern, self.representation, flags)
-		return self.__from_match(re_match)
+		return self.__from_match(re_match, pattern)
 			
 	def search(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
 		re_match = re.search(pattern, self.representation, flags)
-		return self.__from_match(re_match)
+		return self.__from_match(re_match, pattern)
 
 	def split(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
