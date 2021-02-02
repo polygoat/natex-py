@@ -106,7 +106,9 @@ sentence.sub(r'#NSUBJ', 'Affe')
 # returns 'Ein Affe isst keinen Gurkensalat in New York.'
 ```
 
-Check out `test.py` for some more examples!
+Check out [`test.py`] for some more examples!
+
+[`test.py`]: https://github.com/polygoat/natex-py/blob/main/test.py
 
 ## Installation
 Run:
