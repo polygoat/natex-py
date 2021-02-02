@@ -1,65 +1,65 @@
 from natex import natex
 
-def test_nlpex():
-	result = natex('In New York frisst ein Hund aus der Hand.', 'de').match(r'@ADP <@PROPN>')
+def test_nlpex_en():
+	sentence = natex('Turn off the lights', 'en')
+	
+	result = sentence.findall('<>')
+	assert result == ['Turn', 'off', 'the', 'lights'] 
+
+	result = sentence.findall(r'<!>')
+	assert result == ['Turn', 'off', 'the', 'lights'] 
+
+	result = sentence.findall(r'<@NOUN>')
+	assert result == ['lights'] 
+
+	result = sentence.findall(r'<lights@NOUN>')
+	assert result == ['lights'] 
+
+	result = sentence.findall(r'<#SUBJ@NOUN>')
+	assert result == [] 
+
+	result = sentence.findall(r'<:OBJ>')
+	assert result == ['lights'] 
+
+	result = sentence.findall(r'lights@NOUN <>')
+	assert result == [] 
+
+	result = sentence.findall(r'@ADV#SUBJ')
+	assert result == [] 
+
+	result = sentence.findall(r'\<test\>')
+	assert result == [] 
+
+	result = sentence.findall(r'<(@NOUN|#AMOD)>')
+	assert result == ['lights'] 
+
+	result = sentence.findall(r'<(Affe|@NOUN|#AMOD)>')
+	assert result == ['lights'] 
+
+
+def test_nlpex_de():
+	sentence = natex('In New York frisst ein Hund aus der Hand.', 'de')
+
+	result = sentence.match(r'@ADP <@PROPN>')
 	assert str(result) == "<natex.Match object; span=(0, 11), match='In New York'>"
 
-	result = natex('In New York frisst ein Hund aus der Hand.', 'de').match(r'@PROPN')
+	result = sentence.match(r'@PROPN')
 	assert result is None
 
-	result = natex('In New York frisst ein Hund aus der hundsgemeinen Hand.', 'de').search(r'<@DET> <hund\w*@NOUN>', natex.I)
+	sentence = natex('In New York frisst ein Hund aus der hundsgemeinen Hand.', 'de')
+	result = sentence.search(r'<@DET> <hund\w*@NOUN>', natex.I)
 	assert str(result) == "<natex.Match object; span=(19, 27), match='ein Hund'>"
 
-	result = natex('Der Hund isst keinen Gurkensalat in New York.', 'de').findall(r'G\w+@NOUN')
+	sentence = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de')
+
+	result = sentence.findall(r'<G\w+@NOUN')
 	assert result == ['Gurkensalat']
 
-	result = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').search(r'@NOUN')
+	result = sentence.search(r'@NOUN')
 	assert str(result) == "<natex.Match object; span=(4, 8), match='Hund'>"
 
-	result = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').sub(r'@(NOUN|PROPN)', 'Affe')
+	result = sentence.sub(r'@(NOUN|PROPN)', 'Affe')
 	assert result == 'Ein Affe isst keinen Affe in Affe.'
 
-	result = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').sub(r'#NSUBJ', 'Affe')
+	result = sentence.sub(r'#NSUBJ', 'Affe')
 	assert result == 'Ein Affe isst keinen Gurkensalat in New York.'
-
-
-def __test_nlpex_en():
-	sentence = natex('Turn off the lights', 'en')
-	selector = '<>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<!>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<@NOUN>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<lights@NOUN>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<#SUBJ@NOUN>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<:OBJ>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'lights@NOUN <>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'@ADV#SUBJ'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'\<test\>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'New York'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<dan\@gmail\.com>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<(@NOUN|#AMOD)>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
-
-	selector = r'<(Affe|@NOUN|#AMOD)>'
-	print(selector, '\n', sentence.findall(selector), '\n', '-' * 40, '\n')
