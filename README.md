@@ -11,15 +11,15 @@ sentence = natex('Sloths eat steak in New York')
 sentence.match(r'@NOUN')
 # returns <natex.Match object; span=(0, 6), match='Sloths'>
 
-# find first occurence of an adposition followed by a proper noun
+# find first occurrence of an adposition followed by a proper noun
 sentence.search(r'@ADP <@PROPN>')  	
 # returns <natex.Match object; span=(17, 28), match='in New York'>
 
-# find all occurences of nouns or proper nouns
+# find all occurrences of nouns or proper nouns
 sentence.findall(r'@(NOUN|PROPN)') 	
 # returns ['Sloths', 'steak', 'New York']
 
-# find all occurences of nouns or proper nouns starting with an s (irregardless of casing)
+# find all occurrences of nouns or proper nouns starting with an s (irregardless of casing)
 sentence.findall(r's[^@]+@(NOUN|PROPN)', natex.I)
 # returns ['Sloths', 'steak']
 
@@ -47,11 +47,11 @@ You can use it for simple tagging (**NLU**):
 from natex import natex
 
 sentence = natex('book flights from Munich to Chicago')
-origin_location, destination_location = sentence.findall('@PROPN')
+origin_location, destination_location = sentence.findall('<@PROPN>')
 # origin_location ='Munich', destination_location = 'Chicago'
 
 sentence = natex('I am being called Dan Borufka')
-firstname, lastname = sentence.findall('@PROPN')
+firstname, lastname = sentence.findall('<@PROPN>')
 # firstname = 'Dan', lastname = 'Borufka'
 
 sentence = natex('I need to go to Italy')
@@ -87,22 +87,26 @@ from natex import natex
 
 sentence = natex('Sloths eat steak in New York')
 
-# find first occurence of character sequence "ea" in nouns only
+# find first occurrence of character sequence "ea" in nouns only
 sentence.search(r'ea@NOUN')			
 # returns <natex.Match object; span=(11, 16), match='steak'>
 
-# find first occurence of character sequence "ea"
+# find first occurrence of character sequence "ea"
 sentence.search(r'ea')
 # returns <natex.Match object; span=(7, 9), match='ea'>
 
-# find all occurences of nouns or proper nouns starting with a lowercase s
+# find all occurrences of nouns or proper nouns starting with a lowercase s
 sentence.findall(r's[^@]+@(NOUN|PROPN)') 
 # returns ['steak']
 
-natex('Ein Hund isst keinen Gurkensalat in New York.', 'de').sub(r'#NSUBJ', 'Affe')
+sentence = natex('Ein Hund isst keinen Gurkensalat in New York.', 'de')
+
+# replace the nominal subject with the literal 'Affe'
+sentence.sub(r'#NSUBJ', 'Affe')
 # returns 'Ein Affe isst keinen Gurkensalat in New York.'
 ```
 
+Check out `test.py` for some more examples!
 
 ## Installation
 Run:
@@ -172,10 +176,10 @@ Returns a `natex.Match` object describing the first substring matching _pattern_
 Returns all found strings matching _pattern_ as a list.
 
 **.split(pattern, flags)**
-Splits the sentence by all occurences of the found _pattern_ and returns a list of strings.
+Splits the sentence by all occurrences of the found _pattern_ and returns a list of strings.
 
 **.sub(pattern, replacement, flags)**
-Replaces all occurences of the found _pattern_ by _replacement_ and returns the changed string.
+Replaces all occurrences of the found _pattern_ by _replacement_ and returns the changed string.
 
 ## Testing
 You can use pytest in your terminal (simply type in `pytest`) to run the unit tests shipped with this package.
