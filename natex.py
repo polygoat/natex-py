@@ -12,19 +12,25 @@ from dataclasses import dataclass
 STANZA_PROCESSORS = 'tokenize,pos,ner,lemma,depparse'
 
 @dataclass
-class Data:
-	def __init__(self, **kwargs):
-		for kw, arg in kwargs.items():
-			setattr(self, kw, arg)
-
-	def __repr__(self):
-		return repr(self.__dict__)
-
-class NatExToken(Data):	
+class NatExToken:	
 	SYMBOL_ORDER = ['', '@','#', '!']
 
 	def __repr__(self):
 		return repr(self.__dict__)
+
+	@staticmethod
+	def from_stanza(token, span):
+		return NatExToken(index=token['index'],
+			literal=token['text'],
+			lemma=_.get(token, 'lemma', ''),
+			upos=_.get(token, 'upos', '').upper(), 
+			xpos=_.get(token, 'xpos').upper(), 
+			udep=_.get(token, 'deprel', '').upper(),
+			span=span,
+			features=self.__split_features(_.get(token, 'feats', '')),
+			is_token=True,
+			is_separator=False
+		)
 
 	def is_empty(self, check_text=True):
 		symbols = NatExToken.SYMBOL_ORDER
@@ -89,7 +95,8 @@ class NatExToken(Data):
 
 		return output
 
-class NatExMatch(Data):
+@dataclass
+class NatExMatch:
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.match = self.original[slice(*self._span)]
@@ -100,7 +107,8 @@ class NatExMatch(Data):
 	def span(self):
 		return tuple(self._span)
 
-class NatExSeparator(Data):	pass
+@dataclass
+class NatExSeparator:	pass
 
 class NatEx:
 	UNIVERSAL_POS_TAGS = ['SCONJ', 'PUNCT', 'PROPN', 'CCONJ', 'VERB', 'PRON', 'PART', 'NOUN', 'INTJ', 'SYM', 'NUM', 'DET', 'AUX', 'ADV', 'ADP', 'ADJ', 'X']
@@ -166,18 +174,9 @@ class NatEx:
 						break
 
 			span[1] = span[0] + token_length
+			token['index'] = index
 
-			parsed_token = NatExToken(index=index,
-				literal=token['text'],
-				lemma=_.get(token, 'lemma', ''),
-				upos=_.get(token, 'upos', '').upper(), 
-				xpos=_.get(token, 'xpos').upper(), 
-				udep=_.get(token, 'deprel', '').upper(),
-				span=span,
-				features=self.__split_features(_.get(token, 'feats', '')),
-				is_token=True,
-				is_separator=False
-			)
+			parsed_token = NatExToken.from_stanza(token, span)
 			sentence_pos += token_length
 
 			self.tokens.append(parsed_token)
@@ -334,7 +333,7 @@ def natex(sentence, language_code='en'):
 					needs_setup = True
 		
 		if needs_setup:
-			print('Download of stanza models necessary. This will only happen once.')
+			print('Download of stanza models necessary. This will only happen once…')
 			NatEx.setup(language_code)
 			return natex(sentence, language_code)
 
