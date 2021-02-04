@@ -37,7 +37,7 @@ class NatExToken(FromKw):
 			literal=token['text'],
 			lemma=_.get(token, 'lemma', ''),
 			upos=_.get(token, 'upos', '').upper(), 
-			xpos=_.get(token, 'xpos').upper(), 
+			xpos=_.get(token, 'xpos', '').upper(), 
 			udep=_.get(token, 'deprel', '').upper(),
 			span=span,
 			features=split_features(_.get(token, 'feats', '')),
@@ -357,6 +357,3 @@ natex.Token = NatExToken
 natex.I = re.I
 natex.M = re.M
 natex.S = re.S
-
-sentence = natex('Maintenant on ne pense pas', 'fr')
-print(sentence)
