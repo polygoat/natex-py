@@ -108,7 +108,15 @@ class NatExMatch:
 		return tuple(self._span)
 
 @dataclass
-class NatExSeparator:	pass
+class NatExSeparator:
+	@staticmethod
+	def from_string(literal, index, span):
+		return NatExSeparator(index=index,
+			literal=literal[slice(*span)], 
+			span=span, 
+			is_token=False, 
+			is_separator=True
+		)
 
 class NatEx:
 	UNIVERSAL_POS_TAGS = ['SCONJ', 'PUNCT', 'PROPN', 'CCONJ', 'VERB', 'PRON', 'PART', 'NOUN', 'INTJ', 'SYM', 'NUM', 'DET', 'AUX', 'ADV', 'ADP', 'ADJ', 'X']
@@ -138,13 +146,7 @@ class NatEx:
 				separator_len = parsed_sentence.text[sentence_pos:].index(token['text'])
 				span = [sentence_pos, sentence_pos + separator_len]
 
-				parsed_separator = NatExSeparator(index=index,
-					literal=parsed_sentence.text[slice(*span)],
-					span=span,
-					is_token=False,
-					is_separator=True
-				)
-
+				parsed_separator = NatExSeparator.from_string(index, parsed_sentence.text, span)
 				sentence_pos += separator_len
 
 				self.separators.append(parsed_separator)
@@ -181,11 +183,7 @@ class NatEx:
 
 			self.tokens.append(parsed_token)
 
-			optionals = ''
-
-			if parsed_token.features:
-				if _.get(parsed_token.features, 'MOOD') == 'IMP':
-					optionals = '!'
+			optionals = self.__get_optionals(parsed_token)
 
 			deps = parsed_token.udep.replace(':', ' ')
 			natex_token = f'<{parsed_token.literal}@{parsed_token.upos}#{deps}{optionals}>'
@@ -203,7 +201,14 @@ class NatEx:
 		self.representation = representation
 
 	def __repr__(self):
-		return str(self.representation)
+		return str(self.representation)#
+
+	def __get_optionals(self, parsed_token):
+		optionals = ''
+		if parsed_token.features:
+			if _.get(parsed_token.features, 'MOOD') == 'IMP':
+				optionals = '!'
+		return optionals
 
 	def __split_span(self, feature_string):
 		data = self.__split_features(feature_string)
@@ -220,6 +225,8 @@ class NatEx:
 			return obj
 
 	def __to_regex(self, natex_string):
+		TAGS_REGEX = r'(?<!\\)[#@:!][^#@:!>]*'
+		
 		parsed_natex = natex_string.replace(r'\\<', '${ESCAPED_TOKEN_OPEN}')
 		parsed_natex = parsed_natex.replace(r'\\>', '${ESCAPED_TOKEN_CLOSE}')
 
@@ -231,9 +238,8 @@ class NatEx:
 
 			if not re.match(r'\s+$', token):
 				used_symbols = set([])
-				found_tags = re.findall(r'(?<!\\)[#@:!][^#@:!>]*', token)
-
-				cleaned_parts = re.split(r'(?<!\\)[#@:!][^#@:!>]*', token)
+				found_tags = re.findall(TAGS_REGEX, token)
+				cleaned_parts = re.split(TAGS_REGEX, token)
 				cleaned_parts = [part for part in cleaned_parts if part not in ['', '<', '>']]
 
 				tags = {
