@@ -8,4 +8,4 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	if args.command == 'setup':
-		NatEx.setup(args.param)
+		NatEx.setup(*args.param)
