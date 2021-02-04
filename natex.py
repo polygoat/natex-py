@@ -339,7 +339,7 @@ def natex(sentence, language_code='en'):
 					needs_setup = True
 		
 		if needs_setup:
-			print('Download of stanza models necessary. This will only happen once…')
+			print('Download of stanza models necessary. Please re-run the script once the installation is done!')
 			NatEx.setup(language_code)
 			return natex(sentence, language_code)
 
