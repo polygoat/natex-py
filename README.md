@@ -117,6 +117,22 @@ Run:
 pip install natex
 ```
 
+By default, NatEx only installs the English models for stanza.
+Use the following command to download a model for another language: 
+
+```bash
+python -m natex setup <language_code>`
+```
+
+e.g. for French use:
+
+```bash
+python -m natex setup fr`
+```
+
+
+Visit https://github.com/secretsauceai/natex-py for a full list of supported language codes.
+
 ## Usage
 NatEx provides the same API as the [`re` package], but adds the following special characters:
 
