@@ -5,6 +5,7 @@ import os
 import sys
 import stanza
 import argparse
+import importlib
 import pydash as _
 import contextlib
 from dataclasses import dataclass
@@ -298,6 +299,7 @@ class NatEx:
 	@staticmethod
 	def setup(language_code='en', verbose=True):
 		stanza.download(language_code, processors=STANZA_PROCESSORS, verbose=verbose)
+		importlib.reload(stanza)
 
 	def match(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
@@ -342,7 +344,7 @@ def natex(sentence, language_code='en'):
 					needs_setup = True
 		
 		if needs_setup:
-			print('Download of stanza models necessary. Please re-run the script once the installation is done!')
+			print('Download of stanza models necessary. You will have to re-run the script once the downloads are through.')
 			NatEx.setup(language_code)
 			return natex(sentence, language_code)
 
