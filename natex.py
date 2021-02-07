@@ -1,24 +1,11 @@
 #!/usr/bin/env python3
 
 import re
-import os
-import sys
-import stanza
 import argparse
 import importlib
 import pydash as _
-import contextlib
+from types import ModuleType
 from dataclasses import dataclass
-
-STANZA_PROCESSORS = 'tokenize,pos,ner,lemma,depparse'
-
-def split_features(feature_string):
-	if feature_string:
-		obj = dict()
-		for features in feature_string.split('|'):
-			key, value = features.split('=')
-			obj[key.upper()] = value.upper()
-		return obj
 
 @dataclass
 class FromKw:
@@ -31,20 +18,6 @@ class NatExToken(FromKw):
 
 	def __repr__(self):
 		return repr(self.__dict__)
-
-	@staticmethod
-	def from_stanza(token, span):
-		return NatExToken(index=token['index'],
-			literal=token['text'],
-			lemma=_.get(token, 'lemma', ''),
-			upos=_.get(token, 'upos', '').upper(), 
-			xpos=_.get(token, 'xpos', '').upper(), 
-			udep=_.get(token, 'deprel', '').upper(),
-			span=span,
-			features=split_features(_.get(token, 'feats', '')),
-			is_token=True,
-			is_separator=False
-		)
 
 	def is_empty(self, check_text=True):
 		symbols = NatExToken.SYMBOL_ORDER
@@ -134,6 +107,8 @@ class NatEx:
 	UNIVERSAL_POS_TAGS = ['SCONJ', 'PUNCT', 'PROPN', 'CCONJ', 'VERB', 'PRON', 'PART', 'NOUN', 'INTJ', 'SYM', 'NUM', 'DET', 'AUX', 'ADV', 'ADP', 'ADJ', 'X']
 	UNIVERSAL_DEP_TAGS = ['REPARANDUM', 'DISLOCATED', 'PARATAXIS', 'DISCOURSE', 'VOCATIVE', 'GOESWITH', 'COMPOUND', 'ORPHAN', 'NUMMOD', 'ADVMOD', 'XCOMP', 'PUNCT', 'NSUBJ', 'FIXED', 'CSUBJ', 'CCOMP', 'APPOS', 'ADVCL', 'ROOT', 'NMOD', 'MARK', 'LIST', 'IOBJ', 'FLAT', 'EXPL', 'CONJ', 'CASE', 'AMOD', 'OBL', 'OBJ', 'DET', 'DEP', 'COP', 'CLF', 'AUX', 'ACL', 'CC']
 
+	engine = None
+
 	def __init__(self, parsed_sentence):
 		self.parsed_sentence = parsed_sentence
 		self.tokens = []
@@ -146,19 +121,19 @@ class NatEx:
 		index = 0
 		mapping_index = 0
 
-		tokens = list(parsed_sentence.tokens)
+		tokens = parsed_sentence
 
 		while(len(tokens)):
-			token = tokens.pop(0).to_dict()[0]
-			token_length = len(token['text'])
+			token = tokens.pop(0)
+			token_length = len(token.literal)
 			parsed_separator = ''
 			separator_len = 0
 
-			if parsed_sentence.text[sentence_pos : sentence_pos + token_length] != token['text']:
-				separator_len = parsed_sentence.text[sentence_pos:].index(token['text'])
+			if parsed_sentence.literal[sentence_pos : sentence_pos + token_length] != token.literal:
+				separator_len = parsed_sentence.literal[sentence_pos:].index(token.literal)
 				span = [sentence_pos, sentence_pos + separator_len]
 
-				parsed_separator = NatExSeparator.from_string(parsed_sentence.text, index, span)
+				parsed_separator = NatExSeparator.from_string(parsed_sentence.literal, index, span)
 				sentence_pos += separator_len
 
 				self.separators.append(parsed_separator)
@@ -170,27 +145,27 @@ class NatEx:
 
 				mapping_index = len(representation)
 
-			span = self.__split_span(token['misc'])
+			span = self.__split_span(token.span)
 
 			# merge multi-word named entities to one token
-			if token['ner'][:2] == 'B-':
+			if token.ner[:2] == 'B-':
 				while(True):
 					next_token = tokens.pop(0)
 					if parsed_separator:
-						token['text'] += parsed_separator.literal
+						token.literal += parsed_separator.literal
 						span[1] += separator_len
 						self.separators.pop()
 
-					token['text'] += next_token.text
-					token_length = len(token['text'])
+					token.literal += next_token.literal
+					token_length = len(token.literal)
 
 					if next_token.ner[:2] == 'E-':
 						break
 
 			span[1] = span[0] + token_length
-			token['index'] = index
+			token.index = index
 
-			parsed_token = NatExToken.from_stanza(token, span)
+			parsed_token = NatExToken(**token)
 			sentence_pos += token_length
 
 			self.tokens.append(parsed_token)
@@ -209,7 +184,7 @@ class NatEx:
 
 			index += 1
 
-		self.original = self.parsed_sentence.text
+		self.original = self.parsed_sentence.literal
 		self.representation = representation
 
 	def __repr__(self):
@@ -297,9 +272,19 @@ class NatEx:
 			return result
 
 	@staticmethod
-	def setup(language_code='en', verbose=True):
-		stanza.download(language_code, processors=STANZA_PROCESSORS, verbose=verbose)
-		importlib.reload(stanza)
+	def setup(engine, language_code='en', verbose=True):
+		NatEx.use(engine)
+		NatEx.engine.setup(language_code)
+
+	@staticmethod
+	def use(engine):
+		if isinstance(engine, ModuleType):
+			engine = engine.__name__
+
+		wrapper_name = f'{_.upper_first(engine)}Wrapper'
+		wrapper_module = importlib.import_module(f'wrappers.{engine}_wrapper')
+		wrapper_class = getattr(wrapper_module, wrapper_name)
+		NatEx.engine = wrapper_class()
 
 	def match(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)
@@ -334,21 +319,9 @@ def natex(sentence, language_code='en'):
 	if isinstance(sentence, list):
 		parsed_sentence = sentence
 	else:
-		needs_setup = False
-		with open(os.devnull, 'w') as devnull:
-			with contextlib.redirect_stderr(devnull):
-				try:
-					nlp = stanza.Pipeline(language_code, processors=STANZA_PROCESSORS, verbose=False)
-					parsed = nlp(sentence)
-				except FileNotFoundError:
-					needs_setup = True
-		
-		if needs_setup:
-			print('Download of stanza models necessary. You will have to re-run the script once the downloads are through.')
-			NatEx.setup(language_code)
-			return natex(sentence, language_code)
-
-		parsed_sentence = parsed.sentences[0]
+		parsed_sentence = NatEx.engine.parse(sentence, language_code)
+		if NatEx.engine.needs_setup:
+			return None
 	
 	result = NatEx(parsed_sentence)
 	return result
@@ -356,6 +329,11 @@ def natex(sentence, language_code='en'):
 natex.Class = NatEx
 natex.Match = NatExMatch
 natex.Token = NatExToken
+natex.use = NatEx.use
 natex.I = re.I
 natex.M = re.M
 natex.S = re.S
+
+natex.use('stanza')
+sentence = natex('Here we go')
+print(sentence)
