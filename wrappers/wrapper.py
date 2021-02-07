@@ -1,8 +1,13 @@
 import pydash as _
 
-class Normalizer:
-	SUPPORTED_KEYS = ['literal', 'lemma', 'upos', 'xpos', 'udep', 'features']
+class ParsedSentence(list): pass
+class ParsedToken: pass
+
+class Wrapper:
+	SUPPORTED_KEYS = ['literal', 'lemma', 'upos', 'xpos', 'udep', 'ner', 'features']
 	SPLIT_FEATURES = True
+
+	needs_setup = False
 
 	@staticmethod
 	def __split_features(feature_string):
@@ -33,24 +38,33 @@ class Normalizer:
 
 	def map(self, item):
 		index, token = item
-		parsed_token = {}
-		for key in Normalizer.SUPPORTED_KEYS:
+		parsed_token = ParsedToken()
+		for key in Wrapper.SUPPORTED_KEYS:
 			prop = _.get(self.KEY_MAPPING, key, key)
 			value = _.get(token, prop, '')
 			value = self.preprocess(value, key)
 
 			if key == 'features':
 				if self.SPLIT_FEATURES:
-					value = Normalizer.__split_features(value)
+					value = Wrapper.__split_features(value)
 
-			_.set_(parsed_token, key, value)
-		parsed_token['index'] = index
+			setattr(parsed_token, key, value)
+		parsed_token.index = index
 		return parsed_token
 
-	def normalize(self, sentence, language_code='en'):
+	def parse(self, sentence, language_code='en'):
 		processor = self.load_processor(language_code)
+
+		if self.needs_setup:
+			return False
+		
 		parsed = processor(sentence)
 		parsed_sentence = self.get_sentence(parsed)
 		tokens = self.get_tokens(parsed_sentence)
-		parsed_tokens = _.map_(enumerate(tokens), self.map)
+		parsed_tokens = map(self.map, enumerate(tokens))
+		parsed_tokens = ParsedSentence(parsed_tokens)
+		parsed_tokens.literal = sentence
 		return parsed_tokens
+
+	def setup(self):
+		print(f'No setup needed for {self.name}.')
