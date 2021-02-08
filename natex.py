@@ -145,15 +145,13 @@ class NatEx:
 
 				mapping_index = len(representation)
 
-			span = self.__split_span(token.span)
-
 			# merge multi-word named entities to one token
 			if token.ner[:2] == 'B-':
 				while(True):
 					next_token = tokens.pop(0)
 					if parsed_separator:
 						token.literal += parsed_separator.literal
-						span[1] += separator_len
+						token.span[1] += separator_len
 						self.separators.pop()
 
 					token.literal += next_token.literal
@@ -162,10 +160,10 @@ class NatEx:
 					if next_token.ner[:2] == 'E-':
 						break
 
-			span[1] = span[0] + token_length
+			token.span[1] = token.span[0] + token_length
 			token.index = index
 
-			parsed_token = NatExToken(**token)
+			parsed_token = NatExToken(**token.__dict__)
 			sentence_pos += token_length
 
 			self.tokens.append(parsed_token)
@@ -178,7 +176,7 @@ class NatEx:
 			representation += natex_token
 
 			for i in range(mapping_index, len(representation) + 1):
-				self.mapping[i] = span
+				self.mapping[i] = token.span
 
 			mapping_index = len(representation)
 
@@ -196,12 +194,6 @@ class NatEx:
 			if _.get(parsed_token.features, 'MOOD') == 'IMP':
 				optionals = '!'
 		return optionals
-
-	def __split_span(self, feature_string):
-		data = split_features(feature_string)
-		span = data.values()
-		span = list(map(int, span))
-		return span
 
 	def __to_regex(self, natex_string):
 		TAGS_REGEX = r'(?<!\\)[#@:!][^#@:!>]*'
@@ -322,7 +314,7 @@ def natex(sentence, language_code='en'):
 		parsed_sentence = NatEx.engine.parse(sentence, language_code)
 		if NatEx.engine.needs_setup:
 			return None
-	
+
 	result = NatEx(parsed_sentence)
 	return result
 
@@ -335,5 +327,3 @@ natex.M = re.M
 natex.S = re.S
 
 natex.use('stanza')
-sentence = natex('Here we go')
-print(sentence)
