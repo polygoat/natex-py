@@ -10,7 +10,7 @@ class StanzaWrapper(Wrapper):
 		'literal': 'text',
 		'udep':'deprel',
 		'features': 'feats',
-		'span': 'misc'
+		'span': ['misc.start_char', 'misc.end_char']
 	}
 	SPLIT_FEATURES = True
 	STANZA_PROCESSORS='tokenize,pos,ner,lemma,depparse'
