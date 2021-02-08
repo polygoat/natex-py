@@ -108,6 +108,7 @@ class NatEx:
 	UNIVERSAL_DEP_TAGS = ['REPARANDUM', 'DISLOCATED', 'PARATAXIS', 'DISCOURSE', 'VOCATIVE', 'GOESWITH', 'COMPOUND', 'ORPHAN', 'NUMMOD', 'ADVMOD', 'XCOMP', 'PUNCT', 'NSUBJ', 'FIXED', 'CSUBJ', 'CCOMP', 'APPOS', 'ADVCL', 'ROOT', 'NMOD', 'MARK', 'LIST', 'IOBJ', 'FLAT', 'EXPL', 'CONJ', 'CASE', 'AMOD', 'OBL', 'OBJ', 'DET', 'DEP', 'COP', 'CLF', 'AUX', 'ACL', 'CC']
 
 	engine = None
+	pipeline = ['tokenize', 'pos', 'ner', 'lemma', 'depparse']
 
 	def __init__(self, parsed_sentence):
 		self.parsed_sentence = parsed_sentence
@@ -277,6 +278,7 @@ class NatEx:
 		wrapper_module = importlib.import_module(f'wrappers.{engine}_wrapper')
 		wrapper_class = getattr(wrapper_module, wrapper_name)
 		NatEx.engine = wrapper_class()
+		NatEx.engine.PIPELINE = NatEx.pipeline
 
 	def match(self, pattern, flags=0):
 		pattern = self.__to_regex(pattern)

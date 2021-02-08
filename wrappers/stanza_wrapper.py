@@ -6,14 +6,17 @@ from .wrapper import Wrapper, ParsedSentence
 class StanzaWrapper(Wrapper):	
 	name = 'stanza'
 
+	DEBUGGING = False
+	SPLIT_FEATURES = True
 	KEY_MAPPING = {
 		'literal': 'text',
 		'udep':'deprel',
 		'features': 'feats',
 		'span': ['misc.start_char', 'misc.end_char']
 	}
-	SPLIT_FEATURES = True
-	STANZA_PROCESSORS='tokenize,pos,ner,lemma,depparse'
+
+	def __get_processors(self):
+		return ','.join(self.PIPELINE)
 
 	def get_sentence(self, parsed):
 		return parsed.sentences[0]
@@ -30,7 +33,7 @@ class StanzaWrapper(Wrapper):
 		with open(os.devnull, 'w') as devnull:
 			with contextlib.redirect_stderr(devnull):
 				try:
-					nlp = stanza.Pipeline(language_code, processors=self.STANZA_PROCESSORS, verbose=False)
+					nlp = stanza.Pipeline(language_code, processors=self.__get_processors(), verbose=self.DEBUGGING)
 				except FileNotFoundError:
 					self.needs_setup = True
 		
@@ -40,4 +43,4 @@ class StanzaWrapper(Wrapper):
 		return nlp
 
 	def setup(self, language_code='en'):
-		stanza.download(language_code, processors=self.STANZA_PROCESSORS, verbose=verbose)
+		stanza.download(language_code, processors=self.__get_processors(), verbose=self.DEBUGGING)

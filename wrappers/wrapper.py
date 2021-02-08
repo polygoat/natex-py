@@ -22,6 +22,13 @@ class Wrapper:
 				obj[key.strip()] = value.strip()
 			return obj
 
+	def __parse_features(self, feature_string):
+		if self.SPLIT_FEATURES:
+			if isinstance(feature_string, str):
+				if '=' in feature_string:
+					return Wrapper.__split_features(feature_string)
+		return feature_string
+
 	def load_processor(self): pass
 
 	def get_sentence(self, parsed): 
@@ -49,17 +56,10 @@ class Wrapper:
 			nlp = self.load_processor()
 			sentence = nlp(sentence)
 
-	@staticmethod
-	def __parse_features(feature_string):
-		if isinstance(feature_string, str):
-			if '=' in feature_string:
-				return Wrapper.__split_features(feature_string)
-		return feature_string
-
 	def map(self, item):
 		index, token = item
 		parsed_token = ParsedToken()
-		for key in Wrapper.SUPPORTED_KEYS:
+		for key in self.SUPPORTED_KEYS:
 			props = _.get(self.KEY_MAPPING, key, key)
 
 			if not isinstance(props, list):
@@ -71,11 +71,11 @@ class Wrapper:
 				if '.' in prop:
 					container_prop = prop.split('.')[0]
 					container_value = _.get(token, container_prop, '')
-					container_value = Wrapper.__parse_features(container_value)
+					container_value = self.__parse_features(container_value)
 					_.set_(token, container_prop, container_value)
 
 				value = _.get(token, prop, '')
-				value = Wrapper.__parse_features(value)
+				value = self.__parse_features(value)
 				value = self.preprocess(value, key)
 				values.append(value)
 
