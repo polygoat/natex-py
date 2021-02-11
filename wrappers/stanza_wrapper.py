@@ -28,7 +28,6 @@ class StanzaWrapper(Wrapper):
 
 	def load_processor(self, language_code='en'):
 		nlp = False
-
 		# suppress stanza warnings
 		with open(os.devnull, 'w') as devnull:
 			with contextlib.redirect_stderr(devnull):
@@ -36,10 +35,6 @@ class StanzaWrapper(Wrapper):
 					nlp = stanza.Pipeline(language_code, processors=self.__get_processors(), verbose=self.DEBUGGING)
 				except FileNotFoundError:
 					self.needs_setup = True
-		
-		if self.needs_setup:
-			print('Download of stanza models necessary. You will have to re-run the script once the downloads are through.')
-
 		return nlp
 
 	def setup(self, language_code='en'):
