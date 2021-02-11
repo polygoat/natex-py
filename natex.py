@@ -274,8 +274,10 @@ class NatEx:
 		if isinstance(engine, ModuleType):
 			engine = engine.__name__
 
+		#base = '' if __name__ == '__main__' else __name__.split('.')[0] + '.'
+		base = ''
 		wrapper_name = f'{_.upper_first(engine)}Wrapper'
-		wrapper_module = importlib.import_module(f'wrappers.{engine}_wrapper')
+		wrapper_module = importlib.import_module(f'{base}wrappers.{engine}_wrapper', base)
 		wrapper_class = getattr(wrapper_module, wrapper_name)
 		NatEx.engine = wrapper_class()
 		NatEx.engine.PIPELINE = NatEx.pipeline
@@ -315,6 +317,7 @@ def natex(sentence, language_code='en'):
 	else:
 		parsed_sentence = NatEx.engine.parse(sentence, language_code)
 		if NatEx.engine.needs_setup:
+			raise Exception(f'Download of {NatEx.engine.name} models necessary. Please use `python -m natex setup stanza {language_code}` to do so. Note you will have to re-run the script once the downloads are through.')
 			return None
 
 	result = NatEx(parsed_sentence)
@@ -329,3 +332,14 @@ natex.M = re.M
 natex.S = re.S
 
 natex.use('stanza')
+
+if __name__ == '__main__':
+	import argparse
+
+	parser = argparse.ArgumentParser(description='Configure NatEx local installation using the `setup` sub-command')
+	parser.add_argument('command', help='setup')
+	parser.add_argument('params', metavar='N', nargs='*')
+	args = parser.parse_args()
+
+	if args.command == 'setup':
+		NatEx.setup(*args.params)
