@@ -200,5 +200,4 @@ Splits the sentence by all occurrences of the found _pattern_ and returns a list
 Replaces all occurrences of the found _pattern_ by _replacement_ and returns the changed string.
 
 ## Testing
-You can use pytest in your terminal (simply type in `pytest`) to run the unit tests shipped with this package.
-Install it by running `pip install pytest` in your terminal.
+You can run `tests/main.py` in your terminal to run the basic unit tests shipped with this package.
