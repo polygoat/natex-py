@@ -245,14 +245,14 @@ class NewEngineWrapper(Wrapper):
 	}
 
 	def load_processor(self, language_code):
-		return NewEngine.load_nlp_model(language_code)
+		return NewEngine.load_nlp_model(language_code, **self.config)
 
 ```
 
 You'll then be able to use it for natex like so:
 
 ```python
-natex.use('new_engine')
+natex.use('new_engine', { 'some': 'option' })
 ```
 
 ## Testing
