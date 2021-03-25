@@ -4,6 +4,8 @@ import spacy
 from .wrapper import Wrapper
 
 class SpacyWrapper(Wrapper):	
+	name = 'spacy'
+	
 	__LANGUAGE_MODEL_MAPPING = {
 		'da': 'da_core_news_{size}',
 		'de': 'de_core_news_{size}',
