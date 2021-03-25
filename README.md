@@ -34,7 +34,8 @@ Think of it as an extension of [regular expressions] for natural language proces
 
 ### Why not [Tregex], [Semgrex], or [Tsurgeon]?
 NatEx was designed primarily with simplicity in mind.
-Libraries like [Tregex], [Semgrex], or [Tsurgeon] may be able to match more complex patterns, but they have a steep learning curve and the patterns are hard to read. Plus NatEx is written for Python. It wraps the built-in `re` package with an abstraction layer and thus provides almost the same performance as any normal regex.
+Libraries like [Tregex], [Semgrex], or [Tsurgeon] may be able to match more complex patterns, but they have a steep learning curve and the patterns are hard to read. In addition, they are hardcoded for specific libraries, whereas NatEx allows usage of any libraries offering pipelines for POS tagging, dependency tagging and others. 
+NatEx is written for Python, wrapping the built-in `re` package with an abstraction layer and thus provides almost the same performance as any normal regex.
 
 [Tregex]: https://nlp.stanford.edu/software/tregex/The_Wonderful_World_of_Tregex.ppt/
 [Semgrex]: https://nlp.stanford.edu/nlp/javadoc/javanlp/edu/stanford/nlp/semgraph/semgrex/SemgrexPattern.html
