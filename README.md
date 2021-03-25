@@ -132,6 +132,8 @@ python -m natex setup fr`
 
 Visit https://github.com/secretsauceai/natex-py for a full list of supported language codes.
 
+If you want to 
+
 ## Usage
 NatEx provides the same API as the [`re` package], but adds the following special characters:
 
@@ -142,9 +144,15 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 | <      | token boundary (opening) | <New            | _Find tokens starting with "New"_ |
 | :      | either @ or #  			| <:ADV 		  | _Find tokens with e.g. universal POS "ADV" or dep. tree tag "ADVMOD"_ |
 | @      | part of speech tag       | @ADJ 		  	  | _Find tokens that are adjectives_ |
-| #      | dependency tree tag      | #OBJ 			  | _Find the objects of the sentence_ |
+| #      | dependency tree tag      | #OBJ 			  | _Find the objects of the sentence (as in their role)_ |
 | !      | imperative (mood)        | <!>			  | _Find any verbs that are in imperative form_ |
 | >      | token boundary (closing) | York>			  | _Find all tokens ending in "York"_ |
+
+For a list of available POS or other features checkout [these] [couple] of [links].
+
+[these]: https://universaldependencies.org/u/pos/	
+[couple]: https://universaldependencies.org/u/feat/index.html
+[links]: https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
 
 If you combine features (e.g. seeking by part of speech and dependency tree simultaneously) make sure you provide them in the order of the table above.
 
@@ -172,7 +180,7 @@ natex.use('stanza')
 
 You might pass any [Stanza Pipeline] or [Spacy load options] as second parameter:
 
-[Stanza]: https://stanfordnlp.github.io/stanza/pipeline.html#pipeline
+[Stanza Pipeline]: https://stanfordnlp.github.io/stanza/pipeline.html#pipeline
 [Spacy load options]: https://spacy.io/api/top-level
 
 ```python 
