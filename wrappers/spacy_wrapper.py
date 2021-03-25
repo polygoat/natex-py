@@ -55,4 +55,4 @@ class SpacyWrapper(Wrapper):
 			self.needs_setup = True
 			return False
 		
-		return spacy.load(model)
+		return spacy.load(model, **self.config)
