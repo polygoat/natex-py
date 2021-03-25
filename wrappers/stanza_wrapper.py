@@ -8,6 +8,7 @@ class StanzaWrapper(Wrapper):
 
 	DEBUGGING = False
 	SPLIT_FEATURES = True
+	PIPELINE = ['tokenize','mwt','pos','depparse','ner']
 	KEY_MAPPING = {
 		'literal': 'text',
 		'udep':'deprel',
