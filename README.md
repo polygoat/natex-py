@@ -130,7 +130,6 @@ e.g. for French use:
 python -m natex setup fr`
 ```
 
-
 Visit https://github.com/secretsauceai/natex-py for a full list of supported language codes.
 
 ## Usage
@@ -161,6 +160,21 @@ natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
 
 Calling the `natex()` function returns a `NatEx` instance. See [API] for a more detailed description.
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the sentence respectively.
+
+You can use our wrapper architecture to use Natex with any existing library or e.g. POS tagger you want. We have already created a wrapper for [Stanza] and [Spacy] respectively. Here's how you use them:
+
+```python
+natex.use('stanza')
+```
+
+You might pass any [Stanza] or [Spacy configs] as second parameter:
+
+[Stanza]: 
+[Spacy configs]:
+
+```python 
+natex.use('stanza', use_gpu=False)
+```
 
 [API]: #api
 
