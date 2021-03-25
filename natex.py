@@ -270,7 +270,7 @@ class NatEx:
 		NatEx.engine.setup(language_code)
 
 	@staticmethod
-	def use(engine):
+	def use(engine, options=False):
 		if isinstance(engine, ModuleType):
 			engine = engine.__name__
 
@@ -279,7 +279,7 @@ class NatEx:
 		wrapper_name = f'{_.upper_first(engine)}Wrapper'
 		wrapper_module = importlib.import_module(f'{base}wrappers.{engine}_wrapper', base)
 		wrapper_class = getattr(wrapper_module, wrapper_name)
-		NatEx.engine = wrapper_class()
+		NatEx.engine = wrapper_class(options)
 		NatEx.engine.PIPELINE = NatEx.pipeline
 
 	def match(self, pattern, flags=0):

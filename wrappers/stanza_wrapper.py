@@ -32,7 +32,7 @@ class StanzaWrapper(Wrapper):
 		with open(os.devnull, 'w') as devnull:
 			with contextlib.redirect_stderr(devnull):
 				try:
-					nlp = stanza.Pipeline(language_code, processors=self.__get_processors(), verbose=self.DEBUGGING)
+					nlp = stanza.Pipeline(language_code, processors=self.__get_processors(), verbose=self.DEBUGGING, **self.config)
 				except FileNotFoundError:
 					self.needs_setup = True
 		return nlp
