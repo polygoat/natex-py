@@ -34,7 +34,8 @@ Think of it as an extension of [regular expressions] for natural language proces
 
 ### Why not [Tregex], [Semgrex], or [Tsurgeon]?
 NatEx was designed primarily with simplicity in mind.
-Libraries like [Tregex], [Semgrex], or [Tsurgeon] may be able to match more complex patterns, but they have a steep learning curve and the patterns are hard to read. Plus NatEx is written for Python. It wraps the built-in `re` package with an abstraction layer and thus provides almost the same performance as any normal regex.
+Libraries like [Tregex], [Semgrex], or [Tsurgeon] may be able to match more complex patterns, but they have a steep learning curve and the patterns are hard to read. In addition, they are hardcoded for specific libraries, whereas NatEx allows usage of any libraries offering pipelines for POS tagging, dependency tagging and others. 
+NatEx is written for Python, wrapping the built-in `re` package with an abstraction layer and thus provides almost the same performance as any normal regex.
 
 [Tregex]: https://nlp.stanford.edu/software/tregex/The_Wonderful_World_of_Tregex.ppt/
 [Semgrex]: https://nlp.stanford.edu/nlp/javadoc/javanlp/edu/stanford/nlp/semgraph/semgrex/SemgrexPattern.html
@@ -130,8 +131,9 @@ e.g. for French use:
 python -m natex setup fr
 ```
 
-
 Visit https://github.com/secretsauceai/natex-py for a full list of supported language codes.
+
+If you want to 
 
 ## Usage
 NatEx provides the same API as the [`re` package], but adds the following special characters:
@@ -143,9 +145,15 @@ NatEx provides the same API as the [`re` package], but adds the following specia
 | <      | token boundary (opening) | <New            | _Find tokens starting with "New"_ |
 | :      | either @ or #  			| <:ADV 		  | _Find tokens with e.g. universal POS "ADV" or dep. tree tag "ADVMOD"_ |
 | @      | part of speech tag       | @ADJ 		  	  | _Find tokens that are adjectives_ |
-| #      | dependency tree tag      | #OBJ 			  | _Find the objects of the sentence_ |
+| #      | dependency tree tag      | #OBJ 			  | _Find the objects of the sentence (as in their role)_ |
 | !      | imperative (mood)        | <!>			  | _Find any verbs that are in imperative form_ |
 | >      | token boundary (closing) | York>			  | _Find all tokens ending in "York"_ |
+
+For a list of available POS or other features checkout [these] [couple] of [links].
+
+[these]: https://universaldependencies.org/u/pos/	
+[couple]: https://universaldependencies.org/u/feat/index.html
+[links]: https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
 
 If you combine features (e.g. seeking by part of speech and dependency tree simultaneously) make sure you provide them in the order of the table above.
 
@@ -161,6 +169,28 @@ natex('There goes a test sentence').findall(r'<#OBJ@NOUN>')
 
 Calling the `natex()` function returns a `NatEx` instance. See [API] for a more detailed description.
 Just as the `re.Match` returning methods provided by Python's built-in `re` package, NatEx' equivalents will return a `natex.Match` object containing a `span` and a `match` property referring to position and substring of the sentence respectively.
+
+You can use our wrapper architecture to use Natex with any existing library or e.g. POS tagger you want. We have already created a wrapper for [Stanza] and [Spacy] respectively. Here's how you use them:
+
+[Stanza]: https://stanfordnlp.github.io/stanza/ 
+[Spacy]: https://spacy.io/
+
+```python
+natex.use('stanza')
+```
+
+You might pass any [Stanza Pipeline] or [Spacy load options] as second parameter:
+
+[Stanza Pipeline]: https://stanfordnlp.github.io/stanza/pipeline.html#pipeline
+[Spacy load options]: https://spacy.io/api/top-level
+
+```python 
+natex.use('stanza', use_gpu=False) # will use Stanza without CUDA
+```
+
+If you want to create wrappers for other or your own libraries please refer to the [Wrapping Other Libraries] section.
+
+[Wrapping Other Libraries]: #Wrapping-Other-Libraries 
 
 [API]: #api
 
@@ -199,5 +229,34 @@ Splits the sentence by all occurrences of the found _pattern_ and returns a list
 **.sub(pattern, replacement, flags)**
 Replaces all occurrences of the found _pattern_ by _replacement_ and returns the changed string.
 
+## Wrapping Other Libraries
+
+You can wrap other libraries by forking this repository and creating a new wrapper in `wrappers`. Import and extend the **wrapper class** found in the same directory. The bare minimum structure for your file should look like this:
+
+```python
+from .wrapper import Wrapper
+from .new_engine import NewEngine
+
+class NewEngineWrapper(Wrapper):
+	name = 'new_engine'
+
+	KEY_MAPPING = {
+		'upos': 'pos',
+		...
+	}
+
+	def load_processor(self, language_code):
+		return NewEngine.load_nlp_model(language_code, **self.config)
+
+```
+
+You'll then be able to use it for natex like so:
+
+```python
+natex.use('new_engine', { 'some': 'option' })
+```
+
 ## Testing
-You can run `tests/main.py` in your terminal to run the basic unit tests shipped with this package.
+You can run [`tests/main.py`] in your terminal to run the basic unit tests shipped with this package.
+
+[`tests/main.py`]: https://github.com/polygoat/natex-py/blob/main/tests/main.py
