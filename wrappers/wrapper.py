@@ -13,6 +13,9 @@ class Wrapper:
 
 	needs_setup = False
 
+	def __init__(self, config):
+		self.config = config
+
 	@staticmethod
 	def __split_features(feature_string):
 		if feature_string:

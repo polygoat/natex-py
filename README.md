@@ -121,13 +121,13 @@ By default, NatEx only installs the English models for stanza.
 Use the following command to download a model for another language: 
 
 ```bash
-python -m natex setup <language_code>`
+python -m natex setup <language_code>
 ```
 
 e.g. for French use:
 
 ```bash
-python -m natex setup fr`
+python -m natex setup fr
 ```
 
 
@@ -176,7 +176,7 @@ sentence = natex('Das Faultier isst keinen Gurkensalat', 'de')
 
 ```
 
-When you run NatEx for the first time, it will check for the existence of the corresponding language models and download them if necessary. All subsequent calls to `natex()` will exclude that step.
+When you run NatEx for the first time, **this is the time to get a coffee or a beer**. It will check for the existence of the corresponding language models for Stanza/Spacy and download them if necessary. All subsequent calls to `natex()` will exclude that step and hence run way faster.
 
 ### API
 The API is derived from Python's built-in `re` package:

@@ -104,4 +104,8 @@ def test_natex_de():
 	result = sentence.sub(r'#NSUBJ', 'Affe')
 	assert result == 'Ein Affe isst keinen Gurkensalat in New York.'
 
+natex.use('stanza', use_gpu=False)
+run_tests(test_natex_en, test_natex_de)
+
+natex.use('spacy')
 run_tests(test_natex_en, test_natex_de)
